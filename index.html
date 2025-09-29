@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Grid Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input[type="file"] {
+            background: #111;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        input[type="file"]:hover {
+            border-color: #333;
+            background: #151515;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: #222;
+            outline: none;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            transition: all 0.2s;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 50px;
+            border: 1px solid #222;
+            border-radius: 6px;
+            cursor: pointer;
+            background: transparent;
+            transition: all 0.2s;
+        }
+        input[type="color"]:hover {
+            border-color: #333;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 0.875rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        button:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .value-display {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+        }
+        .canvas-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 2rem;
+            min-height: 500px;
+        }
+        #mainCanvas {
+            max-width: 100%;
+            max-height: 70vh;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="controls-panel">
+            <div>
+                <h1>Grid Generator</h1>
+            </div>
+            
+            <div class="control-group">
+                <label for="imageLoader">Upload Image</label>
+                <input type="file" id="imageLoader" name="imageLoader" accept="image/*"/>
+            </div>
+            
+            <div class="control-group">
+                <label for="densitySlider">Density</label>
+                <input type="range" id="densitySlider" min="10" max="500" value="50">
+                <span class="value-display" id="densityValue">50</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="strokeWidth">Stroke Width</label>
+                <input type="range" id="strokeWidth" min="0.25" max="10" value="1" step="0.25">
+                <span class="value-display" id="strokeValue">1</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="blackLevel">Black Level</label>
+                <input type="range" id="blackLevel" min="0" max="255" value="0">
+                <span class="value-display" id="blackValue">0</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="whiteLevel">White Level</label>
+                <input type="range" id="whiteLevel" min="0" max="255" value="255">
+                <span class="value-display" id="whiteValue">255</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="strokeColor">Stroke Color</label>
+                <input type="color" id="strokeColor" value="#FFFFFF">
+            </div>
+            
+            <div class="control-group">
+                <button id="downloadBtn">Download PNG</button>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+    </div>
+
+<script>
+const imageLoader = document.getElementById('imageLoader');
+const mainCanvas = document.getElementById('mainCanvas');
+const mainCtx = mainCanvas.getContext('2d');
+const densitySlider = document.getElementById('densitySlider');
+const densityValue = document.getElementById('densityValue');
+const strokeWidthSlider = document.getElementById('strokeWidth');
+const strokeValue = document.getElementById('strokeValue');
+const blackLevelSlider = document.getElementById('blackLevel');
+const blackValue = document.getElementById('blackValue');
+const whiteLevelSlider = document.getElementById('whiteLevel');
+const whiteValue = document.getElementById('whiteValue');
+const strokeColorInput = document.getElementById('strokeColor');
+const downloadBtn = document.getElementById('downloadBtn');
+
+let originalImage = null;
+let brightnessMap = null;
+let imgW = 0, imgH = 0;
+let currentStrokeColor = '#FFFFFF';
+let currentStrokeWidth = 1;
+let blackLevel = 0;
+let whiteLevel = 255;
+
+imageLoader.addEventListener('change', handleImage, false);
+densitySlider.addEventListener('input', () => {
+    densityValue.textContent = densitySlider.value;
+    redraw();
+});
+strokeWidthSlider.addEventListener('input', () => {
+    strokeValue.textContent = strokeWidthSlider.value;
+    currentStrokeWidth = parseFloat(strokeWidthSlider.value);
+    redraw();
+});
+blackLevelSlider.addEventListener('input', () => {
+    blackValue.textContent = blackLevelSlider.value;
+    blackLevel = parseInt(blackLevelSlider.value);
+    redraw();
+});
+whiteLevelSlider.addEventListener('input', () => {
+    whiteValue.textContent = whiteLevelSlider.value;
+    whiteLevel = parseInt(whiteLevelSlider.value);
+    redraw();
+});
+strokeColorInput.addEventListener('change', () => {
+    currentStrokeColor = strokeColorInput.value;
+    redraw();
+});
+downloadBtn.addEventListener('click', downloadCanvas, false);
+
+function handleImage(e) {
+    const reader = new FileReader();
+    reader.onload = event => {
+        originalImage = new Image();
+        originalImage.onload = () => {
+            imgW = originalImage.width;
+            imgH = originalImage.height;
+            mainCanvas.width = imgW;
+            mainCanvas.height = imgH;
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = imgW;
+            tempCanvas.height = imgH;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(originalImage, 0, 0);
+
+            const imageData = tempCtx.getImageData(0, 0, imgW, imgH).data;
+            brightnessMap = new Float32Array(imgW * imgH);
+
+            for (let i = 0, j = 0; i < imageData.length; i += 4, j++) {
+                const r = imageData[i], g = imageData[i+1], b = imageData[i+2];
+                brightnessMap[j] = 0.299*r + 0.587*g + 0.114*b;
+            }
+
+            drawGrid();
+        };
+        originalImage.src = event.target.result;
+    };
+    reader.readAsDataURL(e.target.files[0]);
+}
+
+function redraw() {
+    if (originalImage && brightnessMap) drawGrid();
+}
+
+function drawGrid() {
+    const density = parseInt(densitySlider.value);
+    
+    const aspectRatio = imgW / imgH;
+    let gridW, gridH;
+    
+    if (aspectRatio >= 1) {
+        gridW = density;
+        gridH = Math.round(density / aspectRatio);
+    } else {
+        gridH = density;
+        gridW = Math.round(density * aspectRatio);
+    }
+    
+    gridW = Math.max(1, gridW);
+    gridH = Math.max(1, gridH);
+
+    mainCtx.clearRect(0, 0, imgW, imgH);
+
+    const cellW = imgW / gridW;
+    const cellH = imgH / gridH;
+
+    // Calculate levels adjustment range
+    const range = whiteLevel - blackLevel;
+    if (range <= 0) return; // Prevent division by zero
+
+    for (let y = 0; y < gridH; y++) {
+        for (let x = 0; x < gridW; x++) {
+            const sx = Math.floor(x * cellW);
+            const sy = Math.floor(y * cellH);
+            const ex = Math.floor((x + 1) * cellW);
+            const ey = Math.floor((y + 1) * cellH);
+
+            let total = 0;
+            let count = 0;
+            for (let py = sy; py < ey; py++) {
+                const offset = py * imgW;
+                for (let px = sx; px < ex; px++) {
+                    total += brightnessMap[offset + px];
+                    count++;
+                }
+            }
+
+            const avg = total / count;
+            
+            // Apply levels adjustment
+            let adjusted = ((avg - blackLevel) / range) * 255;
+            adjusted = Math.max(0, Math.min(255, adjusted));
+            
+            const opacity = adjusted / 255;
+
+            mainCtx.globalAlpha = opacity;
+            mainCtx.strokeStyle = currentStrokeColor;
+            mainCtx.lineWidth = currentStrokeWidth;
+            mainCtx.strokeRect(sx, sy, ex - sx, ey - sy);
+        }
+    }
+    mainCtx.globalAlpha = 1;
+}
+
+function downloadCanvas() {
+    if (!originalImage) {
+        alert("Please upload an image first.");
+        return;
+    }
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = imgW;
+    tempCanvas.height = imgH;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCtx.drawImage(mainCanvas, 0, 0);
+    
+    const link = document.createElement('a');
+    link.download = 'grid-image.png';
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+}
+</script>
+
+</body>
+</html>
